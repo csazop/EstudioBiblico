@@ -1,0 +1,6 @@
+# Ventana nativa (WebView2 en Windows x64, WKWebView en macOS).
+# En Windows ARM64 no se instala: pythonnet no puede cargar .NET allí (clr_loader
+# solo incluye ClrLoader.dll x86/amd64) y la app usa Edge en modo aplicación.
+pywebview>=5.3; sys_platform != "win32" or platform_machine != "ARM64"
+# Certificados raíz actualizados para las consultas HTTPS
+certifi>=2024.2.2

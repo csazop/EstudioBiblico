@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Estudio Bíblico – Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    /* ── Dashboard Stats ─────────────────────────────────── */
+    .stat-card {
+      background: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: .75rem;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: box-shadow .2s;
+    }
+    .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+    .stat-icon {
+      width: 52px; height: 52px;
+      border-radius: .6rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .stat-label { font-size: .78rem; text-transform: uppercase; letter-spacing: .5px; color: #6c757d; }
+    .stat-sub   { font-size: .8rem; color: #888; margin-top: .15rem;
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+
+    /* ── Panel Cards ─────────────────────────────────────── */
+    .panel-card {
+      background: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: .75rem;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: .85rem 1.25rem;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel-header h6 { margin: 0; font-weight: 700; color: var(--brand-primary); }
+
+    /* ── Item Rows ───────────────────────────────────────── */
+    .item-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      column-gap: .75rem;
+      align-items: center;
+      padding: .75rem 1.25rem;
+      border-bottom: 1px solid #f5f5f5;
+      transition: background .12s;
+      cursor: pointer;
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-row:hover { background: var(--brand-light); }
+    .item-title { font-size: .9rem; font-weight: 600; color: #1a1a2e;
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-meta  { font-size: .75rem; color: #6c757d; margin-top: 1px; }
+    .item-preview { font-size: .75rem; color: #999; margin-top: 2px;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-tag {
+      font-size: .68rem; font-weight: 700; letter-spacing: .5px;
+      padding: 2px 8px; border-radius: 20px;
+    }
+
+    /* ── Version Chips ───────────────────────────────────── */
+    .version-chip {
+      background: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: .5rem;
+      padding: .6rem .9rem;
+      transition: all .15s;
+      cursor: default;
+    }
+    .version-chip:hover { border-color: var(--brand-accent); background: #fffbf0; }
+    .version-abbr { font-size: .85rem; font-weight: 700; color: var(--brand-primary); }
+    .version-name { font-size: .7rem; color: #888; line-height: 1.3; margin-top: 1px; }
+    .version-badge { font-size: .6rem; padding: 1px 5px; border-radius: 3px; }
+
+    /* ── Empty / Error States ────────────────────────────── */
+    .empty-state {
+      padding: 2.5rem 1.25rem;
+      text-align: center;
+      color: #adb5bd;
+    }
+    .empty-state i { font-size: 2.5rem; display: block; margin-bottom: .5rem; }
+
+    /* ── Welcome Banner ──────────────────────────────────── */
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--brand-primary) 0%, #2a5f9e 100%);
+      border-radius: .75rem;
+      padding: 1.5rem 2rem;
+      color: #fff;
+    }
+    .welcome-banner h4 { font-weight: 700; margin: 0 0 .25rem; }
+    .welcome-banner p  { margin: 0; opacity: .8; font-size: .9rem; }
+
+    /* ── Activity Feed ───────────────────────────────────── */
+    .activity-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark sticky-top" style="background:var(--brand-primary)">
+  <div class="container-fluid px-3">
+    <a class="navbar-brand" href="index.html">
+      <i class="bi bi-book-half me-2"></i>Estudio Bíblico
+      <small>Plataforma de Estudio y Predicación</small>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto gap-1">
+        <li class="nav-item"><a class="nav-link active" href="index.html"><i class="bi bi-grid-fill me-1"></i>Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="study-notes.html"><i class="bi bi-journal-text me-1"></i>Notas</a></li>
+        <li class="nav-item"><a class="nav-link" href="sermon-prep.html"><i class="bi bi-mic-fill me-1"></i>Sermones</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<div class="container-fluid px-4 py-4" style="max-width:1400px">
+
+  <!-- Welcome + quick actions -->
+  <div class="row g-3 mb-4 align-items-center">
+    <div class="col-md-8">
+      <div class="welcome-banner">
+        <div class="d-flex align-items-center gap-3">
+          <i class="bi bi-book-half" style="font-size:2.5rem;opacity:.8"></i>
+          <div>
+            <h4 id="welcomeTitle">Bienvenido a tu Estudio Bíblico</h4>
+            <p id="welcomeSub">Cargando actividad reciente…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="d-flex flex-column gap-2">
+        <a href="study-notes.html?new=1" class="btn btn-primary">
+          <i class="bi bi-plus-lg me-2"></i>Nueva Nota de Estudio
+        </a>
+        <a href="sermon-prep.html?new=1" class="btn btn-warning text-dark">
+          <i class="bi bi-plus-lg me-2"></i>Nuevo Sermón
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="row g-3 mb-4" id="statsRow">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#eaf1fb; color:var(--brand-primary)"><i class="bi bi-journal-text"></i></div>
+        <div>
+          <div class="stat-label">Notas</div>
+          <div class="stat-value" id="statNotes"><span class="placeholder col-4"></span></div>
+          <div class="stat-sub" id="statNotesLast">Cargando…</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fff4e6; color:var(--brand-accent)"><i class="bi bi-mic-fill"></i></div>
+        <div>
+          <div class="stat-label">Sermones</div>
+          <div class="stat-value" id="statSermons"><span class="placeholder col-4"></span></div>
+          <div class="stat-sub" id="statSermonsLast">Cargando…</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#f0f7ee; color:#2d6a4f"><i class="bi bi-translate"></i></div>
+        <div>
+          <div class="stat-label">Versiones</div>
+          <div class="stat-value">8</div>
+          <div class="stat-sub">Idiomas disponibles</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fdf0f8; color:#9c27b0"><i class="bi bi-clock-history"></i></div>
+        <div>
+          <div class="stat-label">Última actividad</div>
+          <div class="stat-value fs-5 mt-1" id="statLastActivity" style="font-size:1rem!important">—</div>
+          <div class="stat-sub" id="statLastItem">Sin actividad</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="row g-4">
+
+    <!-- Notes panel -->
+    <div class="col-lg-6">
+      <div class="panel-card h-100">
+        <div class="panel-header">
+          <h6><i class="bi bi-journal-text me-2"></i>Notas de Estudio Recientes</h6>
+          <a href="study-notes.html" class="btn btn-outline-primary btn-sm">Ver todas <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+        <div id="notesList">
+          <div class="empty-state">
+            <div class="spinner-border spinner-border-sm text-primary mb-2"></div>
+            <div class="small">Cargando notas…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sermons panel -->
+    <div class="col-lg-6">
+      <div class="panel-card h-100">
+        <div class="panel-header">
+          <h6><i class="bi bi-mic-fill me-2"></i>Sermones Preparados Recientes</h6>
+          <a href="sermon-prep.html" class="btn btn-outline-warning btn-sm text-dark">Ver todos <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+        <div id="sermonsList">
+          <div class="empty-state">
+            <div class="spinner-border spinner-border-sm text-warning mb-2"></div>
+            <div class="small">Cargando sermones…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity feed -->
+    <div class="col-lg-4">
+      <div class="panel-card h-100">
+        <div class="panel-header">
+          <h6><i class="bi bi-activity me-2"></i>Actividad Reciente</h6>
+        </div>
+        <div id="activityFeed" class="p-3">
+          <div class="empty-state"><div class="spinner-border spinner-border-sm text-secondary mb-2"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bible versions -->
+    <div class="col-lg-8">
+      <div class="panel-card h-100">
+        <div class="panel-header">
+          <h6><i class="bi bi-globe me-2"></i>Versiones de la Biblia Disponibles</h6>
+        </div>
+        <div class="p-3">
+          <div class="row g-2" id="versionsGrid">
+            <!-- Populated by JS -->
+          </div>
+          <!-- Greek NT note -->
+          <div class="alert alert-success border-0 mt-3 mb-0 py-2 px-3" style="background:#e8f5e9; font-size:.82rem">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Griego NT:</strong> Tischendorf 8ª ed. con acentos completos (ὁ θεὸς ἠγάπησεν τὸν κόσμον) —
+            <strong>Griego NT + Español:</strong> Texto griego versículo a versículo con traducción RV1960 en paralelo.
+            Ambas versiones cubren solo el Nuevo Testamento (Mateo–Apocalipsis).
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api-client.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

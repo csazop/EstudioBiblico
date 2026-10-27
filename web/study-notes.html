@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notas de Estudio – Estudio Bíblico</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-md navbar-dark sticky-top" style="background:var(--brand-primary)">
+  <div class="container-fluid px-3">
+    <a class="navbar-brand" href="index.html">
+      <i class="bi bi-book-half me-2"></i>Estudio Bíblico
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-house-fill me-1"></i>Inicio</a></li>
+        <li class="nav-item"><a class="nav-link active" href="study-notes.html"><i class="bi bi-journal-text me-1"></i>Notas de Estudio</a></li>
+        <li class="nav-item"><a class="nav-link" href="sermon-prep.html"><i class="bi bi-mic-fill me-1"></i>Preparar Sermón</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Toast -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- App Layout -->
+<div class="d-flex" style="height:calc(100vh - 56px)">
+
+  <!-- Sidebar -->
+  <aside class="app-sidebar d-flex flex-column">
+    <div class="p-2 border-bottom">
+      <button class="btn btn-primary btn-sm w-100" onclick="newNote()">
+        <i class="bi bi-plus-lg me-1"></i>Nueva Nota
+      </button>
+    </div>
+    <div class="p-2 border-bottom">
+      <input type="search" class="form-control form-control-sm" placeholder="Buscar notas…"
+             id="searchInput" oninput="filterNotes(this.value)">
+    </div>
+    <div id="notesList" class="flex-grow-1 overflow-auto"></div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <!-- Toolbar -->
+    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap no-print">
+      <h5 class="mb-0 me-auto fw-bold" style="color:var(--brand-primary)">
+        <i class="bi bi-journal-text me-2"></i>Notas de Estudio
+      </h5>
+      <button class="btn btn-outline-secondary btn-sm" onclick="newNote()"><i class="bi bi-plus me-1"></i>Nueva</button>
+      <button class="btn btn-success btn-sm" onclick="saveNote()"><i class="bi bi-floppy-fill me-1"></i>Guardar</button>
+      <button class="btn btn-danger btn-sm" id="btnDelete" onclick="deleteNote()" disabled><i class="bi bi-trash-fill me-1"></i>Eliminar</button>
+      <button class="btn btn-warning btn-sm text-dark" onclick="exportPDF()"><i class="bi bi-file-earmark-pdf-fill me-1"></i>PDF</button>
+      <button class="btn btn-info btn-sm text-white" onclick="openTranslationModal()"><i class="bi bi-translate me-1"></i>Traducir</button>
+      <button class="btn btn-secondary btn-sm" onclick="openSpellcheck()"><i class="bi bi-spell-check me-1"></i>Ortografía</button>
+      <button class="btn btn-secondary btn-sm" onclick="openVideoModal()"><i class="bi bi-camera-video-fill me-1"></i>Video</button>
+    </div>
+
+    <!-- Note Form -->
+    <div class="form-card">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label fw-semibold small">Título de la nota</label>
+          <input type="text" class="form-control" id="noteTitle" placeholder="Ej: El Sermón del Monte…">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Fecha de estudio</label>
+          <input type="date" class="form-control" id="noteDate">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold small">Comentarios y reflexiones</label>
+          <div id="noteCommentsEditor" class="quill-editor-main"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bible Sections — 3 columns for version comparison -->
+    <div class="form-card">
+      <div class="form-card-title mb-2">
+        <i class="bi bi-book-half me-1"></i>Textos Bíblicos — Comparación de Versiones
+      </div>
+      <div class="bible-compare-row">
+        <div class="bible-col-wrap"><div class="bible-section" data-section="1"></div></div>
+        <div class="bible-col-wrap"><div class="bible-section" data-section="2"></div></div>
+        <div class="bible-col-wrap"><div class="bible-section" data-section="3"></div></div>
+      </div>
+    </div>
+
+    <!-- Bible Tools: Commentary & Dictionary -->
+    <div class="form-card no-print">
+      <ul class="nav nav-tabs mb-3" id="bibleToolsTabs">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#btTabComm">
+            <i class="bi bi-journals me-1"></i>Comentario Bíblico
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#btTabDict">
+            <i class="bi bi-alphabet me-1"></i>Diccionario Strong's
+          </button>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <!-- Commentary -->
+        <div class="tab-pane fade show active" id="btTabComm">
+          <div id="btCommentary">
+            <p class="text-muted small py-2 mb-0">
+              <i class="bi bi-info-circle me-1"></i>Carga un pasaje en alguna de las columnas para ver los comentarios disponibles.
+            </p>
+          </div>
+        </div>
+        <!-- Strong's Dictionary -->
+        <div class="tab-pane fade" id="btTabDict">
+          <div class="row g-2 align-items-end mb-2">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold small">Número Strong's</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="strongsInput"
+                       placeholder="Ej: G2316, H430…"
+                       onkeydown="if(event.key==='Enter')lookupStrongsUI()">
+              </div>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-primary btn-sm" onclick="lookupStrongsUI()">
+                <i class="bi bi-search me-1"></i>Buscar
+              </button>
+            </div>
+            <div class="col-12">
+              <small class="text-muted">
+                <i class="bi bi-lightbulb me-1"></i>
+                Usa <strong>G</strong> para griego NT (ej: G26 = amor/ἀγάπη) y <strong>H</strong> para hebreo AT (ej: H430 = Dios/אֱלֹהִים).
+                Si cargas en versión KJV, verás los números disponibles del pasaje abajo.
+              </small>
+            </div>
+          </div>
+          <!-- Pills from KJV Strongs tags -->
+          <div id="strongsPills" class="d-flex flex-wrap gap-1 mb-2"></div>
+          <!-- Loading + result -->
+          <div id="strongsLoading" class="d-none text-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary me-1"></div>
+            <small class="text-muted">Consultando diccionario…</small>
+          </div>
+          <div id="strongsResult"></div>
+          <div class="alert alert-light border py-1 px-2 mt-2 mb-0" style="font-size:.76rem">
+            <i class="bi bi-info-circle me-1 text-primary"></i>
+            Datos de la <strong>Concordancia de Strong</strong> (1890) — dominio público. Fuente: OpenScriptures.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timestamps -->
+    <p class="text-muted small text-end no-print" id="timestamps"></p>
+  </main>
+</div>
+
+<!-- ── Translation Modal ──────────────────────────────────────────── -->
+<div class="modal fade" id="translationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:var(--brand-primary);color:#fff">
+        <h5 class="modal-title"><i class="bi bi-translate me-2"></i>Traducción del Contenido</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-semibold small text-muted">Texto original (vista previa)</label>
+          <div id="transSourcePreview" class="trans-source-preview"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small text-muted">Traducir a un idioma específico</label>
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('en')">🇺🇸 English</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('fr')">🇫🇷 Français</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('de')">🇩🇪 Deutsch</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('it')">🇮🇹 Italiano</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('pt')">🇧🇷 Português</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('ru')">🇷🇺 Русский</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('tl')">🇵🇭 Tagalog</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('ja')">🇯🇵 日本語</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('zh')">🇨🇳 中文</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="translateSingleFull('ko')">🇰🇷 한국어</button>
+          </div>
+        </div>
+        <div id="transResults"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-info text-white" id="btnTranslateAll" onclick="translateAll()">
+          <i class="bi bi-translate me-1"></i>Traducir a todos los idiomas
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Spell Check Modal ──────────────────────────────────────────── -->
+<div class="modal fade" id="spellcheckModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:var(--brand-primary);color:#fff">
+        <h5 class="modal-title"><i class="bi bi-spell-check me-2"></i>Revisor Ortográfico y Gramatical</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-2 mb-3 align-items-end">
+          <div class="col-md-5">
+            <label class="form-label fw-semibold small">Sección a revisar</label>
+            <select class="form-select form-select-sm" id="scSource"></select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold small">Idioma</label>
+            <select class="form-select form-select-sm" id="scLang">
+              <option value="auto">Detección automática</option>
+              <option value="es">Español</option>
+              <option value="es-ES">Español (España)</option>
+              <option value="es-MX">Español (México)</option>
+              <option value="en-US">English (US)</option>
+              <option value="pt">Português</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-primary btn-sm w-100" id="scBtnCheck" onclick="runSpellcheck()">
+              <i class="bi bi-spell-check me-1"></i>Revisar texto
+            </button>
+          </div>
+        </div>
+        <div id="scFeedback" style="display:none"></div>
+        <div id="scResults"></div>
+        <div class="alert alert-info border-0 py-2 px-3 mt-3 mb-0" style="font-size:.79rem">
+          <i class="bi bi-info-circle me-1"></i>
+          Revisión con <strong>LanguageTool</strong> (gratuito, sin registro). Haz clic en una sugerencia subrayada para aplicarla directamente en el editor.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Video Generator Modal ─────────────────────────────────────── -->
+<div class="modal fade" id="videoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:var(--brand-primary);color:#fff">
+        <h5 class="modal-title"><i class="bi bi-camera-video-fill me-2"></i>Generar Video de Presentación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                onclick="speechSynthesis.cancel();vgRecording=false;"></button>
+      </div>
+      <div class="modal-body">
+        <canvas id="vgCanvas"></canvas>
+        <div class="vg-nav-bar mt-2">
+          <button class="btn btn-outline-secondary btn-sm" id="vgBtnPrev" onclick="vgPrev()">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </button>
+          <span id="vgSlideCounter" class="small text-muted fw-semibold"></span>
+          <button class="btn btn-outline-secondary btn-sm" id="vgBtnNext" onclick="vgNext()">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+        <div class="vg-info-bar">
+          <span id="vgDuration"></span>
+          <span class="text-muted small">Formato .webm — compatible con Chrome, Edge, Firefox</span>
+        </div>
+        <div class="row g-2 mt-1 align-items-end">
+          <div class="col-md-5">
+            <label class="form-label small mb-1 fw-semibold">Voz para narración</label>
+            <select class="form-select form-select-sm" id="vgVoice"></select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small mb-1 fw-semibold">Velocidad: <span id="vgSpeedLabel">0.9</span>x</label>
+            <input type="range" class="form-range" id="vgSpeed" min="0.5" max="1.5" step="0.1" value="0.9"
+                   oninput="document.getElementById('vgSpeedLabel').textContent=this.value">
+          </div>
+          <div class="col-md-4 d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm flex-fill" id="vgBtnNarrate" onclick="vgToggleNarrate()">🔊 Narrar</button>
+            <button class="btn btn-danger btn-sm flex-fill" id="vgBtnRecord" onclick="vgRecord()">⏺ Grabar</button>
+          </div>
+        </div>
+        <div id="vgProgress" class="d-none mt-2">
+          <div class="progress" style="height:22px">
+            <div id="vgProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-danger"
+                 role="progressbar" style="width:0%">0 / 0</div>
+          </div>
+        </div>
+        <div class="mt-2">
+          <a id="vgBtnDownload" class="btn btn-success btn-sm d-none" href="#" download>
+            <i class="bi bi-download me-1"></i>Descargar video (.webm)
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Commentary Modal ──────────────────────────────────────────── -->
+<div class="modal fade" id="commentaryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-height:92vh">
+    <div class="modal-content" style="height:88vh">
+      <div class="modal-header py-2" style="background:var(--brand-primary);color:#fff">
+        <h6 class="modal-title mb-0" id="commModalTitle">
+          <i class="bi bi-journals me-2"></i>Comentario Bíblico
+        </h6>
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <span id="commModalStatus" class="small d-none" style="font-size:.75rem;opacity:.9"></span>
+          <button type="button" id="commModalTranslate" class="btn btn-sm btn-light py-0 px-2 d-none"
+                  style="font-size:.8rem" onclick="toggleCommentaryTranslation()">
+            <i class="bi bi-translate me-1"></i><span>Ver original</span>
+          </button>
+          <a id="commModalLink" href="#" target="_blank" rel="noopener"
+             class="btn btn-sm btn-light py-0 px-2" style="font-size:.8rem">
+            <i class="bi bi-box-arrow-up-right me-1"></i>BibleHub
+          </a>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+      </div>
+      <div class="modal-body p-0 position-relative">
+        <div id="commModalLoading" class="position-absolute top-50 start-50 translate-middle text-center">
+          <div class="spinner-border text-primary"></div>
+          <div class="small text-muted mt-2" id="commModalLoadingText">Cargando comentario…</div>
+        </div>
+        <iframe id="commModalFrame" src="" class="d-none"
+                style="width:100%;height:100%;border:none;min-height:500px"
+                title="Comentario Bíblico"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+<script src="js/bible-books.js"></script>
+<script src="js/api-client.js"></script>
+<script src="js/study-notes.js"></script>
+<script src="js/bible-tools.js"></script>
+<script src="js/translation.js"></script>
+<script src="js/spellcheck.js"></script>
+<script src="js/video-generator.js"></script>
+</body>
+</html>
