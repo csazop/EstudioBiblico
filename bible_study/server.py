@@ -82,6 +82,8 @@ class Api:
         r("GET", r"/api/bible/versions", lambda q, b: Response(body=self.bible.versions()))
         r("GET", r"/api/bible/strongs/([^/]+)",
           lambda q, b, code: Response(body=self.strongs.lookup(urllib.parse.unquote(code))))
+        r("GET", r"/api/bible/strongs/([^/]+)/rv1909",
+          lambda q, b, code: Response(body=self.strongs.rv1909_usage(urllib.parse.unquote(code))))
         r("GET", r"/api/bible/([\w-]+)/books",
           lambda q, b, v: Response(body=self.bible.books(v)))
         r("GET", r"/api/bible/([\w-]+)/(\d+)/(\d+)", self._chapter)

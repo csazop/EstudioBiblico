@@ -88,11 +88,13 @@ class ApiTest(unittest.TestCase):
         self.assertEqual(self.call("GET", "/api/nada")[0], 404)
         self.assertEqual(self.call("PATCH", "/api/sermons")[0], 501)
         self.assertEqual(self.call("GET", "/api/bible/strongs/X1")[0], 400)
+        self.assertEqual(self.call("GET", "/api/bible/strongs/X1/rv1909")[0], 400)
         self.assertEqual(self.call("GET", "/api/bible/tisch-s/1/1")[0], 400)
 
     def test_versions_and_static(self):
         status, versions = self.call("GET", "/api/bible/versions")
         self.assertIn("rv1960", [v["id"] for v in versions])
+        self.assertIn("rv1909", [v["id"] for v in versions])
         status, html = self.call("GET", "/")
         self.assertEqual(status, 200)
         self.assertIn(b"<html", html.lower())

@@ -50,6 +50,7 @@ async function loadVersions() {
   } catch {
     versions = [
       { id: 'rv1960', name: 'Reina Valera 1960 (RV1960)' },
+      { id: 'rv1909', name: 'Reina Valera 1909 (RV1909)' },
       { id: 'lbla',   name: 'La Biblia de las Américas (LBLA)' },
       { id: 'nvi',    name: 'Nueva Versión Internacional (NVI)' },
       { id: 'ntv',    name: 'Nueva Traducción Viviente (NTV)' },

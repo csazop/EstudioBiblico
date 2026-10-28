@@ -1,16 +1,30 @@
 // ── Bible versions metadata ─────────────────────────────────────
 const VERSIONS = [
+  // Español
   { id: 'rv1960',       abbr: 'RV1960',    name: 'Reina Valera 1960',                lang: 'es',  badge: '',         color: '#1a3a5c' },
-  { id: 'lbla',         abbr: 'LBLA',      name: 'La Biblia de las Américas (RV1995)',lang: 'es',  badge: '',         color: '#1a3a5c' },
-  { id: 'nvi',          abbr: 'NVI',       name: 'Nueva Versión Internacional',       lang: 'es',  badge: '',         color: '#1a3a5c' },
-  { id: 'ntv',          abbr: 'NTV',       name: 'Nueva Traducción Viviente',         lang: 'es',  badge: '',         color: '#1a3a5c' },
+  { id: 'rv1909',       abbr: 'RV1909',    name: 'Reina Valera 1909',                lang: 'es',  badge: 'Nueva',    color: '#1a3a5c' },
+  { id: 'lbla',         abbr: 'LBLA',      name: 'La Biblia de las Américas',        lang: 'es',  badge: '',         color: '#1a3a5c' },
+  { id: 'nvi',          abbr: 'NVI',       name: 'Nueva Versión Internacional',      lang: 'es',  badge: '',         color: '#1a3a5c' },
+  { id: 'ntv',          abbr: 'NTV',       name: 'Nueva Traducción Viviente',        lang: 'es',  badge: '',         color: '#1a3a5c' },
+  // English
+  { id: 'kjv',          abbr: 'KJV',       name: 'King James Version',               lang: 'en',  badge: "Strong's", color: '#5c3a1a' },
+  { id: 'nkjv',         abbr: 'NKJV',      name: 'New King James Version',           lang: 'en',  badge: '',         color: '#5c3a1a' },
+  { id: 'esv',          abbr: 'ESV',       name: 'English Standard Version',         lang: 'en',  badge: '',         color: '#5c3a1a' },
+  { id: 'nasb',         abbr: 'NASB',      name: 'New American Standard Bible',      lang: 'en',  badge: '',         color: '#5c3a1a' },
+  { id: 'lsb',          abbr: 'LSB',       name: 'Legacy Standard Bible',            lang: 'en',  badge: '',         color: '#5c3a1a' },
+  { id: 'nlt',          abbr: 'NLT',       name: 'New Living Translation',           lang: 'en',  badge: '',         color: '#5c3a1a' },
+  { id: 'niv',          abbr: 'NIV',       name: 'New International Version',        lang: 'en',  badge: '',         color: '#5c3a1a' },
+  // Griego
   { id: 'tischendorf',  abbr: 'GRC-NT',    name: 'Tischendorf 8ª Ed.',               lang: 'grc', badge: 'Solo NT',  color: '#2d6a4f' },
+  { id: 'tisch-s',      abbr: 'TISCH-S',   name: "Tischendorf con Strong's",         lang: 'grc', badge: "Strong's", color: '#2d6a4f' },
   { id: 'gnt-parallel', abbr: 'GRC+ESP',   name: 'Griego NT + RV1960 (Paralelo)',    lang: 'grc', badge: 'Paralelo', color: '#1b5e20' },
   { id: 'lxx',          abbr: 'LXX',       name: 'Septuaginta – Griego AT',          lang: 'el',  badge: 'Solo AT',  color: '#2d6a4f' },
+  // Hebreo
   { id: 'codex',        abbr: 'WLC',       name: 'Texto Hebreo Masorético',          lang: 'he',  badge: 'Hebreo',   color: '#9c4a00' },
+  { id: 'wlca',         abbr: 'WLC-S',     name: "Westminster Leningrad con Strong's", lang: 'he', badge: "Strong's", color: '#9c4a00' },
 ];
 
-const LANG_FLAG = { es: '🇪🇸', grc: '🏛️', el: '🇬🇷', he: '✡️' };
+const LANG_FLAG = { es: '🇪🇸', en: '🇬🇧', grc: '🏛️', el: '🇬🇷', he: '✡️' };
 
 // ── Init ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -210,6 +224,8 @@ function renderActivityFeed(notes, sermons) {
 // ── Versions Grid ─────────────────────────────────────────────────
 function renderVersionsGrid() {
   const el = document.getElementById('versionsGrid');
+  const countEl = document.getElementById('statVersions');
+  if (countEl) countEl.textContent = VERSIONS.length;
   el.innerHTML = VERSIONS.map(v => `
     <div class="col-6 col-sm-4 col-md-3">
       <div class="version-chip">

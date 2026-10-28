@@ -14,6 +14,7 @@ from .http_client import ServiceError, get_text
 VERSIONS: list[dict[str, Any]] = [
     # ── Español ──
     {"id": "rv1960", "name": "Reina Valera 1960 (RV1960)", "lang": "es", "source": "bolls"},
+    {"id": "rv1909", "name": "Reina Valera 1909 (RV1909)", "lang": "es", "source": "getbible"},
     {"id": "lbla", "name": "La Biblia de las Américas (LBLA)", "lang": "es", "source": "bolls"},
     {"id": "nvi", "name": "Nueva Versión Internacional (NVI)", "lang": "es", "source": "bolls"},
     {"id": "ntv", "name": "Nueva Traducción Viviente (NTV)", "lang": "es", "source": "bolls"},
@@ -47,7 +48,7 @@ BOLLS_MAP = {
     "tisch-s": "TISCH", "wlca": "WLCa",
 }
 
-GETBIBLE_MAP = {"tischendorf": "tischendorf", "lxx": "lxx", "codex": "codex"}
+GETBIBLE_MAP = {"rv1909": "valera", "tischendorf": "tischendorf", "lxx": "lxx", "codex": "codex"}
 
 NT_ONLY = {"tischendorf", "gnt-parallel", "tisch-s"}
 OT_ONLY = {"wlca"}

@@ -11,7 +11,7 @@ Docker (Nginx + ASP.NET Core + PostgreSQL) por **una sola aplicación Python**:
 | Docker Compose            | `run.bat` / `EstudioBiblico.exe` · `run.sh` / `EstudioBiblico.app` |
 
 La interfaz (HTML/JS/CSS) es la misma, así que se conservan todas las funciones:
-notas de estudio, preparación de sermones, 17 versiones bíblicas (español, inglés,
+notas de estudio, preparación de sermones, 18 versiones bíblicas (español, inglés,
 griego y hebreo), concordancia Strong, traducción, corrector ortográfico,
 exportación a PDF y generador de video.
 

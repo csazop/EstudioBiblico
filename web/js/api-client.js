@@ -45,6 +45,7 @@ const BibleApi = {
 // Strong's Concordance
 const StrongsApi = {
   lookup: (code) => apiFetch(`/bible/strongs/${encodeURIComponent(code)}`),
+  rv1909: (code) => apiFetch(`/bible/strongs/${encodeURIComponent(code)}/rv1909`),
 };
 
 // Translation

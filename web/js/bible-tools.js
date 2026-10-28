@@ -350,18 +350,18 @@ function _btKeepSpacing(original, translated) {
   return lead + translated.trim() + trail;
 }
 
-async function _btTranslateTexts(texts) {
+async function _btTranslateTexts(texts, source = 'auto') {
   try {
-    return await _btGoogleTranslate(texts);
+    return await _btGoogleTranslate(texts, source);
   } catch {
-    const res = await TranslationApi.translateBatch(texts, 'es');
+    const res = await TranslationApi.translateBatch(texts, 'es', source);
     return res.translations;
   }
 }
 
-async function _btGoogleTranslate(texts) {
+async function _btGoogleTranslate(texts, source = 'auto') {
   const res = await fetch(
-    'https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=auto&tl=es',
+    `https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=${source}&tl=es`,
     { method: 'POST', body: new URLSearchParams({ q: texts.join('\n') }) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
@@ -372,8 +372,8 @@ async function _btGoogleTranslate(texts) {
   if (texts.length === 1) return [joined.replace(/\n/g, ' ')];
   const mid = Math.ceil(texts.length / 2);
   const [a, b] = await Promise.all([
-    _btGoogleTranslate(texts.slice(0, mid)),
-    _btGoogleTranslate(texts.slice(mid)),
+    _btGoogleTranslate(texts.slice(0, mid), source),
+    _btGoogleTranslate(texts.slice(mid), source),
   ]);
   return a.concat(b);
 }
@@ -399,6 +399,69 @@ function _btSetLoadingText(text) {
 }
 
 // ── Strong's Dictionary ────────────────────────────────────────────────────
+// The dictionary (OpenScriptures) is in English; the optional switch translates the
+// definition fields to Spanish. Translations are cached per code for the session.
+
+const BT_STRONGS_LANG_KEY = 'bt-strongs-spanish';
+
+const _btStrongs = {
+  gen: 0,             // bumps on every render/toggle to drop stale translations
+  code: '',
+  cache: new Map(),   // code → translated texts (same order as [data-bt-tr] fields)
+  wantSpanish: (() => {
+    try { return localStorage.getItem(BT_STRONGS_LANG_KEY) === '1'; } catch { return false; }
+  })(),
+};
+
+(() => {
+  const sw = document.getElementById('strongsTranslate');
+  if (sw) sw.checked = _btStrongs.wantSpanish;
+})();
+
+function toggleStrongsTranslation(on) {
+  _btStrongs.wantSpanish = !!on;
+  try { localStorage.setItem(BT_STRONGS_LANG_KEY, on ? '1' : '0'); } catch { /* ignore */ }
+  _btApplyStrongsLanguage();
+}
+
+async function _btApplyStrongsLanguage() {
+  const resultEl = document.getElementById('strongsResult');
+  const fields = resultEl ? [...resultEl.querySelectorAll('[data-bt-tr]')] : [];
+  const noteEl = resultEl?.querySelector('.bt-strongs-tr-note');
+  const gen = ++_btStrongs.gen;
+  const setNote = (text) => {
+    if (!noteEl) return;
+    noteEl.textContent = text;
+    noteEl.classList.toggle('d-none', !text);
+  };
+
+  if (!fields.length) return;
+  fields.forEach(el => { el.dataset.original ??= el.textContent; });
+
+  if (!_btStrongs.wantSpanish) {
+    fields.forEach(el => { el.textContent = el.dataset.original; });
+    setNote('');
+    return;
+  }
+
+  const code = _btStrongs.code;
+  let texts = _btStrongs.cache.get(code);
+  if (!texts) {
+    setNote('Traduciendo al español…');
+    try {
+      texts = await _btTranslateTexts(fields.map(el => _btSquash(el.dataset.original)), 'en');
+    } catch {
+      if (gen !== _btStrongs.gen) return;
+      setNote('No se pudo traducir');
+      showToast('No se pudo traducir la definición. Revisa tu conexión e inténtalo de nuevo.', 'warning');
+      return;
+    }
+    _btStrongs.cache.set(code, texts);
+    if (gen !== _btStrongs.gen) return;
+  }
+  fields.forEach((el, i) => { el.textContent = texts[i] || el.dataset.original; });
+  setNote('Traducción automática del inglés');
+}
 
 async function lookupStrongsUI() {
   const input = document.getElementById('strongsInput');
@@ -416,7 +479,11 @@ async function lookupStrongsUI() {
     const data = await StrongsApi.lookup(code);
     loadingEl?.classList.add('d-none');
     resultEl.innerHTML = _renderStrongsEntry(data);
+    _btStrongs.code = data.code;
+    _btApplyStrongsLanguage();
+    _btLoadRv1909(data.code);
   } catch (e) {
+    _btStrongs.gen++;
     loadingEl?.classList.add('d-none');
     resultEl.innerHTML = `
       <div class="alert alert-warning py-2 px-3 small mb-0">
@@ -424,6 +491,21 @@ async function lookupStrongsUI() {
         ${e.message || 'No se encontró la entrada.'}
       </div>`;
   }
+}
+
+// Spanish usage (RV1909 word counts) loads after the entry, it comes from another site
+async function _btLoadRv1909(code) {
+  let text;
+  try {
+    const { usage } = await StrongsApi.rv1909(code);
+    text = usage.length
+      ? usage.map(u => `${u.word} (${u.count})`).join(', ') + '.'
+      : 'Sin datos para este código.';
+  } catch {
+    text = 'No disponible. Revisa tu conexión a internet.';
+  }
+  const el = document.getElementById('strongsRv1909');
+  if (el && _btStrongs.code === code) el.textContent = text;
 }
 
 function _renderStrongsEntry(data) {
@@ -451,18 +533,25 @@ function _renderStrongsEntry(data) {
     ${derivation ? `
     <div class="bt-strongs-row mt-2">
       <span class="bt-strongs-label"><i class="bi bi-diagram-2 me-1"></i>Origen</span>
-      <span class="bt-strongs-val text-muted small">${derivation}</span>
+      <span class="bt-strongs-val text-muted small" data-bt-tr>${derivation}</span>
     </div>` : ''}
     ${def ? `
     <div class="bt-strongs-row mt-1">
       <span class="bt-strongs-label"><i class="bi bi-book me-1"></i>Definición</span>
-      <span class="bt-strongs-val">${def.trim()}</span>
+      <span class="bt-strongs-val" data-bt-tr>${def.trim()}</span>
     </div>` : ''}
     ${kjvDef ? `
     <div class="bt-strongs-row mt-1">
       <span class="bt-strongs-label"><i class="bi bi-translate me-1"></i>KJV traduce como</span>
-      <span class="bt-strongs-val fst-italic text-muted">${kjvDef}</span>
+      <span class="bt-strongs-val fst-italic text-muted" data-bt-tr>${kjvDef}</span>
     </div>` : ''}
+    <div class="bt-strongs-row mt-1">
+      <span class="bt-strongs-label"><i class="bi bi-translate me-1"></i>RV1909 traduce como</span>
+      <span class="bt-strongs-val fst-italic text-muted" id="strongsRv1909">
+        <span class="spinner-border spinner-border-sm me-1" style="width:.7rem;height:.7rem"></span>Consultando…
+      </span>
+    </div>
+    <div class="bt-strongs-tr-note small text-muted fst-italic mt-1 d-none"></div>
     <div class="mt-2 pt-1 border-top">
       <a href="https://biblehub.com/${isGreek ? 'greek' : 'hebrew'}/${code.slice(1)}.htm"
          target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm">
